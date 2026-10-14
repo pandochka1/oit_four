@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ДУП.03 — Обзор профилактического обслуживания ПК</title>
+<style>
+  :root {
+    --bg: #fbf0f0;
+    --surface: #ffffff;
+    --surface-2: #fdf6f6;
+    --ink: #332327;
+    --muted: #8a6265;
+    --purple: #dc2626;
+    --violet: #e11d48;
+    --indigo: #be123c;
+    --pink: #db2777;
+    --line: #f1e0e0;
+    --ok: #1e7a4a;
+    --ok-soft: #e3f5ec;
+    --bad: #b03a3a;
+    --bad-soft: #f9e8e8;
+    --warn: #b45309;
+    --brand: linear-gradient(135deg, #be123c 0%, #dc2626 55%, #e11d48 100%);
+    --mark: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.68 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+
+  .bg-anim { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+    background: radial-gradient(1100px 600px at 90% -8%, #fbeaea 0%, #fbf0f0 55%); }
+  .bg-anim i { position:absolute; border-radius:50%; filter:blur(70px); opacity:.4; display:block; }
+  .bg-anim i.d1 { width:360px; height:360px; background:#f5c4c4; top:-120px; right:-90px; animation:drift 26s infinite ease-in-out; }
+  .bg-anim i.d2 { width:300px; height:300px; background:#f4c2d0; bottom:-120px; left:-70px; animation:drift 28s infinite ease-in-out reverse; }
+  .bg-anim i.d3 { width:230px; height:230px; background:#f7cdcd; top:50%; left:70%; animation:drift 30s infinite ease-in-out; }
+  @keyframes drift {
+    0%,100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(42px,-32px) scale(1.05); }
+    66% { transform: translate(-36px,28px) scale(.96); }
+  }
+
+  main { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 1.25rem 4rem; }
+
+  header.top { padding: 2.2rem 0 1.3rem; border-bottom: 1px solid var(--line); margin-bottom: .4rem; }
+  header.top .course { display:inline-block; font-weight:600; font-size:.78rem; letter-spacing:.06em;
+    text-transform:uppercase; color:#fff; background:var(--brand); padding:.28rem .7rem; border-radius:999px; margin-bottom:.75rem;}
+  header.top h1 { font-size: clamp(1.55rem, 3.4vw, 2.15rem); line-height:1.15; margin:0 0 .4rem; color:var(--ink); }
+  header.top .meta { color: var(--muted); font-size:.9rem; margin:0; }
+
+  .deck { position: relative; margin-top: 1.1rem; }
+  .slide { position:absolute; top:0; left:0; width:100%;
+    opacity:0; visibility:hidden; transform: translateY(16px);
+    transition: opacity .38s ease, transform .38s ease, visibility 0s linear .38s;
+    background:var(--surface); border:1px solid var(--line); border-radius:18px;
+    padding:2rem 2.2rem; box-shadow:0 10px 30px rgba(40,30,70,.07); }
+  .slide.active { position:relative; opacity:1; visibility:visible; transform:none;
+    transition: opacity .38s ease, transform .38s ease; }
+
+  .slide .kicker { font-size:.74rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--purple); margin:0 0 .35rem; display:block; text-align:left; }
+  .slide, .slide p, .slide li, .modal-body p, .modal-body li { text-align:justify; }
+  h2.st { font-size: clamp(1.3rem, 2.7vw, 1.65rem); line-height:1.25; margin:0 0 .6rem; color:var(--ink); text-align:left; }
+  .slide p.lead { color:var(--muted); margin:.2rem 0 .9rem; }
+
+  .slide.cover { background: var(--brand); border:none; overflow:hidden; }
+  .slide.cover::before, .slide.cover::after { content:""; position:absolute; border-radius:50%; filter:blur(46px); opacity:.4; z-index:0; }
+  .slide.cover::before { width:300px; height:300px; background:#f0a1a1; top:-80px; right:-30px; }
+  .slide.cover::after { width:260px; height:260px; background:#f3a9c9; bottom:-90px; left:-60px; }
+  .slide.cover > * { position:relative; z-index:1; }
+  .slide.cover .kicker { color:#fff; opacity:.92; }
+  .slide.cover h2.st { color:#fff; font-size: clamp(1.7rem, 4.2vw, 2.3rem); }
+  .slide.cover p.lead { color:rgba(255,255,255,.94); }
+  .tagrow { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1.3rem; }
+  .cover .tagrow span { background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.5);
+    padding:.28rem .7rem; border-radius:999px; font-size:.82rem; font-weight:600; }
+
+  .card { border:1px solid var(--line); border-radius:14px; background:var(--surface-2);
+    padding:1.05rem 1.2rem; margin:.6rem 0; }
+  .card .ttl { font-weight:600; color:var(--purple); margin:0 0 .4rem; font-size:1.02rem; }
+  .card .rec { font-weight:600; color:var(--indigo); margin:0 0 .35rem; font-size:.95rem; }
+  .card p { margin:.32rem 0; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:.9rem; }
+  .grid2 .card { margin:0; }
+
+  ul.clean { margin:.35rem 0; padding:0; list-style:none; }
+  ul.clean li { margin:.38rem 0; padding-left:1.3rem; position:relative; }
+  ul.clean li::before { content:""; position:absolute; left:.15rem; top:.72em; width:9px; height:2px;
+    background:var(--purple); border-radius:2px; }
+  ol.steps { margin:.4rem 0; padding-left:1.3rem; counter-reset:st; list-style:none; }
+  ol.steps li { margin:.42rem 0; padding-left:2.1rem; position:relative; }
+  ol.steps li::before { counter-increment:st; content:counter(st); position:absolute; left:0; top:.05rem;
+    width:1.5rem; height:1.5rem; line-height:1.5rem; text-align:center; border-radius:50%;
+    background:var(--brand); color:#fff; font-weight:600; font-size:.8rem; }
+
+  .pill { display:inline-block; font-family:ui-monospace,monospace; font-weight:600; color:var(--purple);
+    background:#fdecec; border:1px solid #f6cbcb; padding:.03rem .45rem; border-radius:6px; }
+  table { border-collapse:collapse; width:100%; font-size:.9rem; margin:.55rem 0; }
+  th, td { padding:.55rem .7rem; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  td.mono, .mono { font-family:ui-monospace,monospace; }
+  table.center th, table.center td { text-align:center; }
+  .scroll { overflow-x:auto; }
+  .note { font-size:.86rem; color:var(--muted); font-style:italic; margin:.45rem 0; }
+  .callout { border-left:4px solid var(--violet); background:var(--surface-2); border-radius:0 10px 10px 0;
+    padding:.9rem 1.1rem; margin:.7rem 0; }
+  .callout b { color:var(--violet); }
+  .example { border:1px dashed #f0bebe; border-radius:12px; padding:.85rem 1.1rem; margin:.6rem 0; background:#fdf7f7; }
+  .example b { color:var(--purple); }
+  .sol { border:1px solid #f6cbcb; border-left:4px solid var(--violet); background:#fdf7f7;
+    border-radius:0 10px 10px 0; padding:.9rem 1.1rem; margin:.6rem 0; }
+  .sol label { font-weight:700; color:var(--purple); display:block; margin-bottom:.35rem; }
+  .sol .ans { display:block; background:#fdecec; border-radius:8px; padding:.55rem .75rem; margin-top:.5rem; font-weight:600; }
+  .formula { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background:#fbf0f0; border:1px solid var(--line); border-radius:10px;
+    padding:.8rem 1rem; margin:.55rem 0; font-size:.96rem; color:#4a2a2e; white-space:pre; }
+  .formula b { color:var(--violet); }
+
+  figure { margin:.6rem 0; border:1px solid var(--line); border-radius:14px; background:var(--surface-2); padding:1rem; }
+  figcaption { color:var(--muted); font-size:.82rem; text-align:center; margin-top:.7rem; }
+  .imgfit { max-width:86%; height:auto; display:block; margin:0 auto; border-radius:10px; }
+
+  .src { border:1px solid var(--line); border-radius:12px; padding:.1rem 1.05rem .5rem; margin:.7rem 0; background:var(--surface-2);}
+  .src h3 { font-size:.86rem; margin:.75rem 0 .3rem; color:var(--purple); text-transform:uppercase; letter-spacing:.05em;}
+  .src-btns { display:flex; flex-wrap:wrap; gap:.55rem; margin-top:.35rem; }
+  .botao { display:inline-flex; align-items:center; gap:.45rem; padding:.5rem .85rem; border-radius:10px;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink); text-decoration:none; font-size:.86rem; font-weight:600;
+    transition: border-color .12s, background .12s, transform .12s; }
+  .botao::before { content:"↗"; color:var(--purple); font-weight:700; }
+  .botao:hover { border-color:var(--purple); background:#fdecec; transform:translateY(-1px); }
+  .botao .bname { color:var(--purple); }
+  .botao .bdesc { color:var(--muted); font-weight:500; }
+
+  .pbar { height:6px; background:#f0dcdc; border-radius:99px; overflow:hidden; margin:1.1rem 0 .6rem; }
+  #pfill { height:100%; width:0%; background:var(--brand); border-radius:99px; transition:width .35s ease; }
+  .nav { display:flex; align-items:center; gap:.6rem; margin-top:.5rem; }
+  .nav button { cursor:pointer; border-radius:10px; font:inherit; font-weight:600;
+    padding:.6rem 1.1rem; background:var(--surface); border:1px solid var(--line); color:var(--ink);
+    transition: transform .1s, background .12s; }
+  .nav button:hover:not(:disabled) { background:var(--surface-2); }
+  .nav button:disabled { opacity:.45; cursor:not-allowed; }
+  .nav .primary { background:var(--brand); color:#fff; border:none; }
+  .dots { flex:1; display:flex; gap:4px; justify-content:center; min-width:0; overflow:hidden; }
+  .dot { width:5px; height:5px; flex:none; border-radius:50%; background:#e9c6c6; border:none; padding:0;
+    cursor:pointer; transition: transform .12s, background .15s, width .12s; }
+  .dot:hover { background:var(--purple); }
+  .dot.active { background:var(--purple); transform:scale(1.3); width:9px; border-radius:99px; }
+  .counter { font-variant-numeric:tabular-nums; font-size:.85rem; color:var(--muted); font-weight:600; min-width:3.2rem; text-align:center; }
+
+  footer { color:var(--muted); font-size:.84rem; border-top:1px solid var(--line);
+    margin-top:2.4rem; padding-top:.9rem; }
+
+  .modal-overlay { position:fixed; inset:0; z-index:50; background:rgba(35,30,55,.5);
+    display:none; align-items:center; justify-content:center; padding:1.5rem; }
+  .modal-overlay.show { display:flex; }
+  .modal { background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    max-width:860px; width:100%; max-height:88vh; display:flex; flex-direction:column;
+    box-shadow:0 30px 70px rgba(30,25,60,.25); }
+  .modal-head { display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    padding:1.05rem 1.4rem; border-bottom:1px solid var(--line); }
+  .modal-head h2 { margin:0; font-size:1.25rem; color:var(--ink); }
+  .modal-close { cursor:pointer; background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+    border-radius:8px; width:38px; height:38px; font-size:1.3rem; line-height:1; }
+  .modal-close:hover { background:var(--bad-soft); color:var(--bad); }
+  .modal-body { overflow-y:auto; padding:1.2rem 1.5rem 1.6rem; }
+  .modal-body p { margin:.45rem 0; color:var(--ink); }
+  .modal-body li { margin:.3rem 0; color:var(--ink); }
+  .qz-intro { font-size:.95rem; color:var(--muted); margin:0 0 1rem; }
+
+  .qz { border:1px solid var(--line); border-radius:14px; padding:1.05rem 1.2rem; margin:1rem 0; background:var(--surface-2); }
+  .qz .ztype { display:inline-block; font-size:.74rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--purple); border:1px solid #f6cbcb; background:#fdecec; border-radius:999px; padding:.12rem .6rem; margin-bottom:.5rem; }
+  .qz .zq { font-weight:600; margin:.2rem 0 .6rem; color:var(--ink); }
+  .qz .zopt { display:block; width:100%; text-align:left; cursor:pointer; border:1.5px solid var(--line);
+    background:var(--surface); border-radius:9px; padding:.6rem .85rem; margin:.42rem 0; font:inherit; color:var(--ink);
+    transition: border-color .12s, background .12s, transform .1s; }
+  .qz .zopt:hover:not(:disabled) { border-color:var(--purple); transform:translateX(3px); }
+  .qz .zopt:disabled { cursor:default; transform:none; }
+  .qz .zopt .l { font-weight:700; color:var(--muted); margin-right:.5rem; }
+  /* цветные варианты: четвёрки цветов по палитре */
+  .qz .zopt:nth-of-type(1) { background:#fdecec; border-color:#f3b6b6; }
+  .qz .zopt:nth-of-type(1) .l { color:#d94545; }
+  .qz .zopt:nth-of-type(2) { background:#e9f2fb; border-color:#b9d4ef; }
+  .qz .zopt:nth-of-type(2) .l { color:#2f6fb0; }
+  .qz .zopt:nth-of-type(3) { background:#e8f5ec; border-color:#b7ddc4; }
+  .qz .zopt:nth-of-type(3) .l { color:#2e8b57; }
+  .qz .zopt:nth-of-type(4) { background:#fdf4e3; border-color:#edd29a; }
+  .qz .zopt:nth-of-type(4) .l { color:#c07a1e; }
+  .qz .zopt:nth-of-type(5) { background:#f0ecfb; border-color:#cfc3ec; }
+  .qz .zopt:nth-of-type(5) .l { color:#6a3fd0; }
+  .qz .zopt:nth-of-type(6) { background:#e9f6f4; border-color:#b6ddd6; }
+  .qz .zopt:nth-of-type(6) .l { color:#179a88; }
+  .qz .zopt.right { border-color:var(--ok); background:var(--ok-soft); }
+  .qz .zopt.wrong { border-color:var(--bad); background:var(--bad-soft); }
+  .qz .zexpl { display:none; margin:.6rem 0 0; padding:.7rem .9rem; border-radius:9px; font-size:.92rem; }
+  .qz .zexpl.show { display:block; }
+  .qz .zexpl.ok { background:var(--ok-soft); border:1px solid #b6e0c4; }
+  .qz .zexpl.bad { background:var(--bad-soft); border:1px solid #f0bfbf; }
+  .qz .zexpl .head { font-weight:800; margin-bottom:.2rem; }
+  .qz .zexpl.ok .head { color:var(--ok); }
+  .qz .zexpl.bad .head { color:var(--bad); }
+  .qz .zscore { font-weight:700; color:var(--purple); margin-top:.1rem; }
+
+  .btn-open { cursor:pointer; background:var(--brand); color:#fff; border:none; font:inherit; font-weight:600;
+    padding:.8rem 1.7rem; font-size:1.02rem; border-radius:11px; box-shadow:0 6px 18px rgba(200,60,60,.3);
+    transition: transform .12s, box-shadow .12s, filter .12s; }
+  .btn-open:hover { transform:translateY(-2px); filter:brightness(1.07); box-shadow:0 10px 24px rgba(200,60,60,.4); }
+
+  /* interactive */
+  .sort-pool { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.7rem; }
+  .sort-pool .card, .seq .card, .match-wrap .card, .dropzone .card, .seq-built .seq-chip {
+    cursor:pointer; font-weight:600; border:1px solid var(--line); }
+  /* цветная палитра карточек интерактивов */
+  .sort-pool .card:nth-child(1), .match-wrap .card:nth-child(1) { background:#fdecec; border-color:#f3b6b6; }
+  .sort-pool .card:nth-child(2), .match-wrap .card:nth-child(2) { background:#e9f2fb; border-color:#b9d4ef; }
+  .sort-pool .card:nth-child(3), .match-wrap .card:nth-child(3) { background:#e8f5ec; border-color:#b7ddc4; }
+  .sort-pool .card:nth-child(4), .match-wrap .card:nth-child(4) { background:#fdf4e3; border-color:#edd29a; }
+  .sort-pool .card:nth-child(5), .match-wrap .card:nth-child(5) { background:#f0ecfb; border-color:#cfc3ec; }
+  .sort-pool .card:nth-child(6), .match-wrap .card:nth-child(6) { background:#e9f6f4; border-color:#b6ddd6; }
+  .seq .card, .seq-built .seq-chip { background:var(--surface); }
+  .seq .card:nth-child(1), .seq-built .seq-chip:nth-child(1) { background:#fdecec; border-color:#f3b6b6; }
+  .seq .card:nth-child(2), .seq-built .seq-chip:nth-child(2) { background:#e9f2fb; border-color:#b9d4ef; }
+  .seq .card:nth-child(3), .seq-built .seq-chip:nth-child(3) { background:#e8f5ec; border-color:#b7ddc4; }
+  .seq .card:nth-child(4), .seq-built .seq-chip:nth-child(4) { background:#fdf4e3; border-color:#edd29a; }
+  .seq .card:nth-child(5), .seq-built .seq-chip:nth-child(5) { background:#f0ecfb; border-color:#cfc3ec; }
+  .seq .card:nth-child(6), .seq-built .seq-chip:nth-child(6) { background:#e9f6f4; border-color:#b6ddd6; }
+  .seq .card:nth-child(7), .seq-built .seq-chip:nth-child(7) { background:#fdecec; border-color:#f3b6b6; }
+  .sort-wrap { margin:.6rem 0; }
+  .sort-pool .card { flex:0 1 auto; min-width:150px; text-align:center; transition:border-color .12s, background .12s; }
+  .sort-pool .card.sel { outline:3px solid var(--purple); outline-offset:1px; }
+  .sort-targets { display:grid; grid-template-columns:1fr 1fr; gap:.7rem; }
+  .sort-col h4 { text-align:center; margin:0 0 .4rem; color:var(--purple); }
+  .dropzone { min-height:90px; border:2px dashed var(--line); border-radius:12px; background:var(--surface-2); padding:.4rem; display:flex; flex-direction:column; gap:.4rem; }
+  .error { border-color:var(--bad) !important; background:var(--bad-soft) !important; }
+  .seq { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin:.6rem 0; }
+  .seq-pool { display:flex; flex-wrap:wrap; gap:.5rem; align-content:flex-start; }
+  .seq-board { border:2px dashed var(--line); border-radius:12px; background:var(--surface-2); padding:.7rem; }
+  .seq-board h4 { margin:0 0 .4rem; color:var(--purple); text-align:center; }
+  .seq-built { display:flex; flex-direction:column; gap:.4rem; min-height:60px; }
+  .seq .card { margin:0; min-width:170px; text-align:center; display:inline-block; padding:.55rem .8rem; border-radius:10px; }
+  .seq .card:hover { border-color:var(--purple); }
+  .seq-chip { position:relative; }
+  .seq-actions { display:flex; gap:.6rem; margin:.6rem 0; }
+  .seq-btn { cursor:pointer; background:var(--brand); color:#fff; border:none; font:inherit; font-weight:600; padding:.6rem 1.3rem; border-radius:10px; }
+  .seq-btn:hover { filter:brightness(1.07); }
+  .seq-btn2 { cursor:pointer; background:var(--surface); border:1px solid var(--line); color:var(--ink); font:inherit; font-weight:600; padding:.6rem 1.3rem; border-radius:10px; }
+  .match-wrap { display:flex; flex-wrap:wrap; gap:.6rem; margin:.6rem 0; }
+
+  @media (max-width: 640px){
+    .grid2 { grid-template-columns:1fr; }
+    .slide { padding:1.3rem 1.1rem; }
+    .dots { display:none; }
+  }
+  @media print {
+    body { background:#fff; }
+    .bg-anim, .nav, .pbar { display:none; }
+    .slide { position:static !important; opacity:1 !important; visibility:visible !important;
+      transform:none !important; break-inside:avoid; background:#fff; color:#111; border:1px solid #ccc; margin:0 0 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-anim"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div>
+<main>
+  <header class="top">
+    <span class="course">ДУП.03 · Основы информационных технологий</span>
+    <h1>Обзор профилактического обслуживания персонального компьютера</h1>
+    <p class="meta">Тема учебного плана · 2 академических часа · очная форма обучения. Методы профилактического обслуживания ПК, системный подход к диагностике неисправностей, перечень профилактических работ для рабочей станции. Тест для самопроверки — в модальном окне с последнего слайда.</p>
+  </header>
+
+  <div class="deck" id="deck">
+
+    <article class="slide cover active">
+      <p class="kicker">Тема · Обслуживание ПК</p>
+      <h2 class="st">Профилактика и диагностика: как сохранить компьютер работоспособным</h2>
+      <p class="lead">Рассматривается профилактическое обслуживание персонального компьютера: назначение регулярных профилактических работ, инструменты и их применение, периодичность обслуживания, правила безопасности, а также системный подход к поиску и устранению неисправностей. Особое внимание уделяется составлению алгоритма диагностики и перечня профилактических работ для рабочей станции.</p>
+      <div class="tagrow">
+        <span>Профилактика ПК</span><span>Инструменты</span><span>Периодичность</span><span>Безопасность</span><span>Диагностика</span><span>Алгоритм</span>
+      </div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Основные понятия</p>
+      <h2 class="st">Что такое профилактическое обслуживание компьютера</h2>
+      <p class="lead">Профилактика направлена на предупреждение неисправностей, а не на их устранение после поломки.</p>
+      <div class="card"><p class="ttl">Определение</p>
+        <p><b>Профилактическое обслуживание</b> — это комплекс плановых мероприятий по поддержанию аппаратных и программных средств в работоспособном состоянии, проводимых регулярно с целью предотвращения отказов, деградации компонентов и потери данных.</p>
+      </div>
+      <div class="example"><b>Сравнение с медициной.</b> Профилактика компьютера аналогична регулярному осмотру у врача: легче и дешевле предупредить болезнь, чем лечить её запущенную форму. Так и с компьютером — регулярная чистка, обновление и проверка обходятся намного дешевле ремонта после полного отказа.</div>
+      <div class="callout"><b>Зачем это нужно:</b> пыль перегревает компоненты, устаревшие программы создают уязвимости, фрагментация и «мусор» замедляют работу, а отсутствие резервных копий грозит потерей данных. Все эти проблемы предупреждает профилактика.</div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Цели профилактики</p>
+      <h2 class="st">Цели и задачи профилактического обслуживания</h2>
+      <p class="lead">Чёткое понимание целей позволяет правильно спланировать перечень работ.</p>
+      <ul class="clean">
+        <li><b>Предотвращение отказов</b> — раннее выявление неисправных компонентов.</li>
+        <li><b>Продление срока службы</b> — борьба с перегревом и износом.</li>
+        <li><b>Поддержание производительности</b> — очистка диска, дефрагментация, обновление.</li>
+        <li><b>Обеспечение безопасности</b> — обновление системы и антивируса.</li>
+        <li><b>Сохранность данных</b> — резервное копирование, проверка накопителей.</li>
+      </ul>
+      <div class="callout"><b>Ключевая мысль:</b> профилактика — это не разовое действие, а регулярный процесс, закреплённый в перечне работ с указанием периодичности.</div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Виды обслуживания</p>
+      <h2 class="st">Виды профилактических работ</h2>
+      <p class="lead">Все работы принято разделять на программные и аппаратные, а также на активные и пассивные меры.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Категория</th><th>Примеры работ</th></tr></thead>
+        <tbody>
+          <tr><td><b>Программная профилактика</b></td><td>Очистка диска, дефрагментация, обновление ОС и ПО, проверка антивирусом, устранение «мусорных» файлов.</td></tr>
+          <tr><td><b>Аппаратная профилактика</b></td><td>Очистка от пыли, проверка и замена термопасты, контроль кулеров, проверка питания и соединительных кабелей.</td></tr>
+          <tr><td><b>Профилактика данных</b></td><td>Создание резервных копий, проверка диска на ошибки, мониторинг состояния накопителя (SMART).</td></tr>
+        </tbody>
+      </table></div>
+      <div class="example"><b>Пример.</b> Регулярная очистка диска и удаление временных файлов ускоряет работу системы, удаление пыли снижает нагрев процессора, а резервное копирование защищает данные от случайного удаления.</div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Инструменты</p>
+      <h2 class="st">Инструменты для профилактического обслуживания</h2>
+      <p class="lead">Для работ требуется как физический, так и программный инструментарий.</p>
+      <div class="grid2">
+        <div class="card"><p class="ttl">Физические (аппаратные) инструменты</p>
+          <ul class="clean">
+            <li>Отвёртки (включая крестовые PH/PZ) для вскрытия корпуса.</li>
+            <li>Баллон со сжатым воздухом или антистатическая кисть для удаления пыли.</li>
+            <li>Термопаста и салфетки для замены.</li>
+            <li>Антистатический браслет для защиты от статического электричества.</li>
+            <li>Пылесос (низкой мощности) для уборки запылённых зон.</li>
+          </ul>
+        </div>
+        <div class="card"><p class="ttl">Программные инструменты</p>
+          <ul class="clean">
+            <li>Средства очистки диска и оптимизации (встроенные и сторонние).</li>
+            <li>Антивирусные программы и средства проверки на вредоносное ПО.</li>
+            <li>Утилиты мониторинга температуры и нагрузки (AIDA64, HWiNFO).</li>
+            <li>Средства проверки накопителей и считывания данных SMART.</li>
+            <li>Программы для резервного копирования.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="note">Правильный инструмент важен и для безопасности: например, баллон со сжатым воздухом должен использоваться вдали от работающих вентиляторов, чтобы не спровоцировать обратное вращение и повреждение подшипников.</div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Периодичность</p>
+      <h2 class="st">Периодичность профилактических работ</h2>
+      <p class="lead">Регулярность — залог эффективности профилактики; ниже приведён типовой график.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Периодичность</th><th>Рекомендуемые работы</th></tr></thead>
+        <tbody>
+          <tr><td><b>Еженедельно</b></td><td>Очистка диска, устранение временных файлов, проверка обновлений безопасности.</td></tr>
+          <tr><td><b>Ежемесячно</b></td><td>Полная проверка антивирусом, дефрагментация HDD, резервное копирование важных данных.</td></tr>
+          <tr><td><b>Раз в 2–3 месяца</b></td><td>Внешняя чистка корпуса от пыли, проверка подключений и кабелей.</td></tr>
+          <tr><td><b>Раз в год</b></td><td>Полная внутренняя чистка, замена термопасты, контроль состояния накопителей и блока питания.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout"><b>Важно:</b> фактическая периодичность зависит от условий эксплуатации. Компьютер в запылённом помещении требует более частой чистки, чем в чистом офисе с кондиционером.</div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Безопасность</p>
+      <h2 class="st">Техника безопасности при обслуживании</h2>
+      <p class="lead">Соблюдение правил безопасности защищает и технику, и специалиста от повреждений.</p>
+      <ul class="clean">
+        <li><b>Отключение питания</b> — перед вскрытием корпуса выключить компьютер и отключить от сети.</li>
+        <li><b>Защита от статики</b> — использовать антистатический браслет, не касаться контактов.</li>
+        <li><b>Аккуратность с жидкостями</b> — не допускать попадания влаги на компоненты.</li>
+        <li><b>Осторожность с сжатым воздухом</b> — не направлять струю в работающие вентиляторы.</li>
+        <li><b>Заземление</b> — корпус и инструмент не должны накапливать статический заряд.</li>
+      </ul>
+      <div class="callout"><b>Помните:</b> электронные компоненты чувствительны к статическому электричеству — даже незаметный разряд может вывести микросхему из строя.</div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Диагностика</p>
+      <h2 class="st">Системный подход к поиску неисправностей</h2>
+      <p class="lead">Для нахождения причины сбоя применяется упорядоченный, системный метод, а не беспорядочный перебор действий.</p>
+      <div class="card"><p class="ttl">Отличие системного подхода</p>
+        <p>Системный подход предполагает последовательное сужение области поиска от общего к частному: сначала определяется категория проблемы, затем проверяются наиболее вероятные причины, и только после этого выполняются конкретные действия. Хаотичная диагностика «наугад» приводит к потере времени и может усугубить ситуацию.</p>
+      </div>
+      <div class="example"><b>Пример логики.</b> Если компьютер не включается, не следует сразу менять блок питания. Сначала нужно проверить очевидное: подачу напряжения, целостность шнура, работу кнопки, индикаторы — и лишь затем переходить к разборке.</div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Алгоритм</p>
+      <h2 class="st">Алгоритм системного подхода к диагностике</h2>
+      <p class="lead">Алгоритм можно представить как последовательность шагов, каждый из которых сужает круг вероятных причин.</p>
+      <ol class="steps">
+        <li><b>Сбор информации.</b> Опрос пользователя: когда возникла проблема, что ей предшествовало, какие признаки проявляются.</li>
+        <li><b>Воспроизведение неисправности.</b> Попытаться воспроизвести сбой, чтобы подтвердить его наличие и уточнить условия.</li>
+        <li><b>Определение области.</b> Отнести проблему к аппаратной или программной, к конкретному устройству или подсистеме.</li>
+        <li><b>Проверка наиболее вероятных причин.</b> Начать с самых частых и дешёвых в проверке причин (кабели, питание, драйверы).</li>
+        <li><b>Локализация и устранение.</b> Изолировать неисправный компонент, заменить или настроить его.</li>
+        <li><b>Проверка результата.</b> Убедиться, что проблема устранена и не появилась новая; протестировать.</li>
+        <li><b>Документирование.</b> Зафиксировать причину и решение — это ускорит работу в будущем.</li>
+      </ol>
+      <div class="callout"><b>Принцип:</b> действовать от простого к сложному и от наиболее вероятного к маловероятному.</div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Категории неисправностей</p>
+      <h2 class="st">Классификация неисправностей</h2>
+      <p class="lead">Правильная классификация сразу сужает область диагностики.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Категория</th><th>Признаки</th><th>Типичные причины</th></tr></thead>
+        <tbody>
+          <tr><td><b>Программные</b></td><td>Ошибки приложений, зависания, «синий экран»</td><td>Сбои драйверов, вирусы, конфликты ПО</td></tr>
+          <tr><td><b>Аппаратные</b></td><td>Нет питания, шум, нагрев, произвольные перезагрузки</td><td>Перегрев, повреждение памяти, отказ блока питания</td></tr>
+          <tr><td><b>Сетевые</b></td><td>Нет доступа в интернет, потери пакетов</td><td>Отказ адаптера, ошибки настройки, проблемы провайдера</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Многие симптомы (например, перезагрузки) могут иметь как программные, так и аппаратные причины, поэтому категория уточняется по результатам простейших проверок.</p>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Разбор сценариев</p>
+      <h2 class="st">Сценарий 1 · Компьютер не включается</h2>
+      <p class="lead">Рассмотрим типичную ситуацию и порядок её системной диагностики.</p>
+      <div class="card"><p class="ttl">Признаки</p>
+        <p>При нажатии кнопки питания индикаторы не загораются, вентиляторы не вращаются.</p>
+      </div>
+      <div class="sol"><label>Диагностика (системный подход)</label>
+        <p><b>Шаг 1.</b> Воспроизведение: убедиться, что проблема воспроизводится устойчиво.</p>
+        <p><b>Шаг 2.</b> Начать с простейшего: проверить, вставлен ли шнур питания в розетку и блок питания, работает ли розетка.</p>
+        <p><b>Шаг 3.</b> Проверить блокировку (удержание кнопки питания) и наличие напряжения на блоке питания.</p>
+        <p><b>Шаг 4.</b> Проверить блок питания: перегоревший предохранитель или неисправный блок — частая причина отсутствия питания.</p>
+        <p><b>Шаг 5.</b> Если питание в норме, проверить материнскую плату и подключение кнопки.</p>
+        <span class="ans">Вывод: диагностика идёт от внешнего источника питания к внутренним компонентам.</span>
+      </div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Разбор сценариев</p>
+      <h2 class="st">Сценарий 2 · Компьютер перегревается</h2>
+      <p class="lead">Перегрев — одна из самых частых причин нестабильной работы и отказов.</p>
+      <div class="card"><p class="ttl">Признаки</p>
+        <p>Шум кулеров, замедление работы, произвольные выключения или перезагрузки под нагрузкой.</p>
+      </div>
+      <div class="sol"><label>Диагностика</label>
+        <p><b>Шаг 1.</b> Воспроизвести нагрузку (запустить требовательное приложение или тест).</p>
+        <p><b>Шаг 2.</b> Проконтролировать температуру средствами мониторинга процессора и видеокарты.</p>
+        <p><b>Шаг 3.</b> Проверить работу кулеров: вращение, посторонний шум, загрязнение.</p>
+        <p><b>Шаг 4.</b> Осмотреть радиаторы и вентиляционные отверстия на предмет скопления пыли.</p>
+        <p><b>Шаг 5.</b> Проверить состояние термопасты на процессоре.</p>
+        <span class="ans">Вывод: перегрев чаще всего устраняется очисткой от пыли и заменой термопасты.</span>
+      </div>
+      <div class="example"><b>Профилактика:</b> регулярная очистка и корректная работа вентиляции снижают риск перегрева и продлевают срок службы компонентов.</div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Разбор сценариев</p>
+      <h2 class="st">Сценарий 3 · Медленная работа системы</h2>
+      <p class="lead">Замедление работы имеет множество причин, которые проверяются последовательно.</p>
+      <div class="card"><p class="ttl">Признаки</p>
+        <p>Долгая загрузка ОС, задержки при запуске программ, «зависания».</p>
+      </div>
+      <div class="sol"><label>Диагностика</label>
+        <p><b>Шаг 1.</b> Проверить загруженность процессора, памяти и диска в диспетчере задач.</p>
+        <p><b>Шаг 2.</b> Оценить свободное место на системном диске — нехватка места замедляет систему.</p>
+        <p><b>Шаг 3.</b> Проверить автозагрузку: лишние программы замедляют старт.</p>
+        <p><b>Шаг 4.</b> Выполнить очистку временных файлов, дефрагментацию HDD.</p>
+        <p><b>Шаг 5.</b> Проверить наличие вредоносных программ и обновлений.</p>
+        <span class="ans">Вывод: снижение производительности чаще всего лечится программной профилактикой.</span>
+      </div>
+      <div class="example"><b>Профилактика:</b> регулярная очистка и контроль автозагрузки поддерживают стабильную скорость работы.</div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Перечень работ</p>
+      <h2 class="st">Перечень профилактических работ для рабочей станции</h2>
+      <p class="lead">Ниже приведён обобщённый регламент профилактики, который можно адаптировать под конкретную станцию.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>№</th><th>Работа</th><th>Периодичность</th><th>Инструменты</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td>Очистка диска и удаление временных файлов</td><td>Еженедельно</td><td>Средства ОС / утилиты</td></tr>
+          <tr><td class="num">2</td><td>Проверка обновлений безопасности</td><td>Еженедельно</td><td>Центр обновлений</td></tr>
+          <tr><td class="num">3</td><td>Антивирусная проверка</td><td>Ежемесячно</td><td>Антивирус</td></tr>
+          <tr><td class="num">4</td><td>Резервное копирование данных</td><td>Ежемесячно</td><td>ПО резервирования</td></tr>
+          <tr><td class="num">5</td><td>Очистка корпуса от пыли</td><td>Раз в 2–3 мес</td><td>Сжатый воздух, кисть</td></tr>
+          <tr><td class="num">6</td><td>Замена термопасты, проверка кулеров</td><td>Раз в год</td><td>Термопаста, отвёртки</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout"><b>Задание занятия:</b> составьте аналогичный перечень для конкретной рабочей станции, указав инструменты, периодичность и меры безопасности.</div>
+    </article>
+
+    <article class="slide interactive">
+      <p class="kicker">Интерактив 1</p>
+      <h2 class="st">Сортировка работ: программная или аппаратная профилактика</h2>
+      <p class="lead">Распределите карточки по категориям. Сначала щёлкните карточку сверху (она подсветится), затем щёлкните контейнер «Программная» или «Аппаратная», чтобы переместить её туда.</p>
+      <div class="sort-wrap">
+        <div class="sort-pool" id="sortPool">
+          <button class="card" data-sort="soft">Очистка диска</button>
+          <button class="card" data-sort="soft">Обновление ОС</button>
+          <button class="card" data-sort="hard">Очистка от пыли</button>
+          <button class="card" data-sort="soft">Антивирусная проверка</button>
+          <button class="card" data-sort="hard">Замена термопасты</button>
+          <button class="card" data-sort="hard">Контроль кулеров</button>
+        </div>
+        <div class="sort-targets">
+          <div class="sort-col"><h4>Программная</h4><div class="dropzone" data-drop="soft"></div></div>
+          <div class="sort-col"><h4>Аппаратная</h4><div class="dropzone" data-drop="hard"></div></div>
+        </div>
+        <p class="note" id="sortHint"></p>
+      </div>
+      <div class="callout"><b>Проверка.</b> Когда распределите все карточки, преподаватель открывает категории, и группа сверяет результат.</div>
+    </article>
+
+    <article class="slide interactive">
+      <p class="kicker">Интерактив 2</p>
+      <h2 class="st">Алгоритм диагностики: соберите последовательность шагов</h2>
+      <p class="lead">Перед вами пул с шагами алгоритма в случайном порядке. Щёлкните шаг, чтобы перенести его в поле для сборки, либо щёлкните шаг в поле сборки, чтобы вернуть его обратно. Когда соберёте порядок, нажмите «Проверить».</p>
+      <div class="seq">
+        <div class="seq-pool" id="seqPool"></div>
+        <div class="seq-board">
+          <h4>Поле для сборки</h4>
+          <div class="seq-built" id="seqBuilt"></div>
+        </div>
+      </div>
+      <div class="seq-actions">
+        <button id="seqCheck" class="seq-btn">Проверить</button>
+        <button id="seqReset" class="seq-btn2">Сбросить</button>
+      </div>
+      <p class="note" id="seqMsg"></p>
+      <div class="callout"><b>Проверка.</b> Правильная последовательность строится по принципу «от простого к сложному» — вы можете свериться с ней после нажатия «Проверить».</div>
+    </article>
+
+    <article class="slide interactive">
+      <p class="kicker">Интерактив 3</p>
+      <h2 class="st">Найди несоответствие: инструмент и его назначение</h2>
+      <p class="lead">Ниже приведены пары «инструмент — назначение». Одна из них неверна. Нажмите на карточку, которая содержит ошибку, и аргументируйте выбор.</p>
+      <div class="match-wrap">
+        <button class="card" data-wrong="false">Баллон со сжатым воздухом — удаление пыли</button>
+        <button class="card" data-wrong="false">Антистатический браслет — защита от статики</button>
+        <button class="card" data-wrong="true">Отвёртка — удаление пыли из корпуса</button>
+        <button class="card" data-wrong="false">Термопаста — теплопередача на радиатор</button>
+      </div>
+      <p class="note" id="matchMsg"></p>
+      <div class="callout"><b>Обсуждение.</b> Отвёртка используется для вскрытия корпуса и крепежа, а для удаления пыли применяют сжатый воздух или кисть.</div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Резюме</p>
+      <h2 class="st">Основные положения темы</h2>
+      <ul class="clean">
+        <li>Профилактика предупреждает отказы, продлевает срок службы и защищает данные.</li>
+        <li>Работы делятся на программные и аппаратные; у каждой своя периодичность.</li>
+        <li>Требуется правильный физический и программный инструмент.</li>
+        <li>Безопасность: отключение питания, защита от статики, аккуратность.</li>
+        <li>Диагностика ведётся системно: от простого к сложному, от общего к частному.</li>
+        <li>Каждая найденная причина документируется для ускорения будущего ремонта.</li>
+      </ul>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Домашнее задание</p>
+      <h2 class="st">Самостоятельная работа по теме</h2>
+      <div class="card"><p class="ttl">Задание (что нужно сделать)</p>
+        <ol class="steps">
+          <li>Составить <b>алгоритм системного подхода к диагностике</b> неисправностей персонального компьютера в виде последовательности шагов.</li>
+          <li>Составить <b>перечень профилактических работ</b> для рабочей станции с указанием инструментов, периодичности и мер безопасности.</li>
+          <li>Описать <b>порядок действий при одной из типовых неисправностей</b> (на выбор): компьютер не включается, перегрев или медленная работа.</li>
+          <li>Дать <b>краткие определения</b> терминам: профилактическое обслуживание, диагностика, антистатический браслет, термопаста.</li>
+        </ol>
+      </div>
+      <div class="card"><p class="ttl">Как оформить работу</p>
+        <ul class="clean">
+          <li>Оформить в текстовом документе; титульная часть: фамилия, имя, группа, номер работы и дата.</li>
+          <li>Структурировать текст: разделы «Алгоритм диагностики», «Перечень профилактических работ» (таблица), «Разбор неисправности», «Определения».</li>
+          <li>Шрифт Times New Roman, 14 пт, полуторный интервал; таблицу перечня оформить с колонками «Работа — Периодичность — Инструменты — Безопасность».</li>
+          <li>Соблюдать академический стиль, без сокращений и разговорных выражений.</li>
+        </ul>
+      </div>
+      <div class="card"><p class="ttl">Как сдать (дистанционно)</p>
+        <ul class="clean">
+          <li>Сохранить работу в формате .docx (или .pdf для итоговой версии).</li>
+          <li>Прислать файл в указанную преподавателем вкладку раздела дисциплины до установленного срока.</li>
+          <li>В сообщении к работе указать: ФИО, группа, тема работы.</li>
+          <li>Если формат сдачи уточнён иначе (например, через электронную почту или систему СДО) — следовать инструкции преподавателя.</li>
+          <li>Проверить, что таблицы и рисунки отображаются корректно, перед отправкой.</li>
+        </ul>
+      </div>
+      <div class="src"><h3>Рекомендуемые источники</h3>
+        <div class="src-btns">
+          <a class="botao" href="https://www.ixbt.com/" target="_blank" rel="noopener"><span class="bname">iXBT</span><span class="bdesc">— статьи об обслуживании ПК</span></a>
+          <a class="botao" href="https://3dnews.ru" target="_blank" rel="noopener"><span class="bname">3DNews</span><span class="bdesc">— статьи о ПК</span></a>
+        </div>
+      </div>
+      <div class="callout"><b>Важно:</b> работа нацелена на самостоятельное изучение материала; при затруднениях обращайтесь к преподавателю через учебную платформу.</div>
+    </article>
+
+    <article class="slide">
+      <p class="kicker">Завершение</p>
+      <h2 class="st">Итоги и тест для самопроверки</h2>
+      <p class="lead">На занятии рассмотрены методы профилактического обслуживания ПК, инструменты и периодичность работ, техника безопасности, а также системный подход к диагностике неисправностей. Для закрепления материала выполните тест для самопроверки.</p>
+      <div class="card">
+        <p class="ttl">Что важно запомнить</p>
+        <ul class="clean">
+          <li>Профилактика дешевле ремонта.</li>
+          <li>Работы ведутся по графику с указанной периодичностью.</li>
+          <li>Перед вскрытием корпуса — отключить питание.</li>
+          <li>Диагностика идёт от простого к сложному.</li>
+        </ul>
+      </div>
+      <div style="margin-top:1.2rem; text-align:center;">
+        <button id="openModal" class="btn-open">Пройти тест для самопроверки</button>
+      </div>
+    </article>
+
+  </div>
+
+  <div class="pbar"><div id="pfill"></div></div>
+  <div class="nav">
+    <button id="prev" disabled>← Назад</button>
+    <div class="dots" id="dots"></div>
+    <span class="counter" id="counter">1</span>
+    <button id="next" class="primary">Далее →</button>
+  </div>
+
+  <footer>
+    <b>ДУП.03 Основы информационных технологий</b> · Тема: Обзор профилактического обслуживания персонального компьютера. Материал для самостоятельной подготовки и повторения. Сформировано 30.09.2026.
+  </footer>
+</main>
+
+<!-- ============ Modal ============ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <h2 id="modalTitle">Тест для самопроверки</h2>
+      <button class="modal-close" id="modalClose" aria-label="Закрыть">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="qz-intro">Задания разных типов: выбор одного варианта, «верно/неверно», выбор нескольких вариантов. После выбора сразу отображается пояснение.</p>
+
+      <div class="qz">
+        <span class="ztype">Выбор одного варианта</span>
+        <p class="zq">Вопрос 1. Каково главное назначение профилактического обслуживания ПК?</p>
+        <button class="zopt" data-ok="false" onclick="qzSingle(this)"><span class="l">А.</span>Ускорение работы любой программы</button>
+        <button class="zopt" data-ok="true" onclick="qzSingle(this)"><span class="l">Б.</span>Предупреждение неисправностей</button>
+        <button class="zopt" data-ok="false" onclick="qzSingle(this)"><span class="l">В.</span>Установка новых игр</button>
+        <button class="zopt" data-ok="false" onclick="qzSingle(this)"><span class="l">Г.</span>Увеличение объёма памяти</button>
+        <div class="zexpl"><p class="head">Пояснение</p><p>Профилактика направлена на предупреждение отказов и поддержание работоспособности, а не на разовые улучшения.</p></div>
+      </div>
+
+      <div class="qz">
+        <span class="ztype">Верно или неверно</span>
+        <p class="zq">Вопрос 2. Перед вскрытием корпуса компьютера необходимо отключить его от сети питания.</p>
+        <button class="zopt" data-ok="true" onclick="qzSingle(this)"><span class="l">А.</span>Верно</button>
+        <button class="zopt" data-ok="false" onclick="qzSingle(this)"><span class="l">Б.</span>Неверно</button>
+        <div class="zexpl"><p class="head">Пояснение</p><p>Да, отключение питания обязательно — это защищает и технику, и специалиста.</p></div>
+      </div>
+
+      <div class="qz">
+        <span class="ztype">Выбор одного варианта</span>
+        <p class="zq">Вопрос 3. Какой инструмент применяют для защиты микросхем от статического электричества?</p>
+        <button class="zopt" data-ok="false" onclick="qzSingle(this)"><span class="l">А.</span>Баллон со сжатым воздухом</button>
+        <button class="zopt" data-ok="true" onclick="qzSingle(this)"><span class="l">Б.</span>Антистатический браслет</button>
+        <button class="zopt" data-ok="false" onclick="qzSingle(this)"><span class="l">В.</span>Отвёртка</button>
+        <button class="zopt" data-ok="false" onclick="qzSingle(this)"><span class="l">Г.</span>Пылесос</button>
+        <div class="zexpl"><p class="head">Пояснение</p><p>Антистатический браслет выводит статический заряд, защищая электронные компоненты.</p></div>
+      </div>
+
+      <div class="qz">
+        <span class="ztype">Выбор нескольких вариантов</span>
+        <p class="zq">Вопрос 4. Какие меры относятся к программной профилактике?</p>
+        <button class="zopt" data-ok="false" onclick="qzMulti(this)"><span class="l">А.</span>Очистка корпуса от пыли</button>
+        <button class="zopt" data-ok="true" onclick="qzMulti(this)"><span class="l">Б.</span>Очистка диска и обновление ОС</button>
+        <button class="zopt" data-ok="true" onclick="qzMulti(this)"><span class="l">В.</span>Антивирусная проверка</button>
+        <button class="zopt" data-ok="false" onclick="qzMulti(this)"><span class="l">Г.</span>Замена термопасты</button>
+        <div class="zexpl"><p class="head">Пояснение</p><p>Очистка диска, обновление и антивирусная проверка — программные меры. Чистка корпуса и замена термопасты относятся к аппаратным.</p></div>
+      </div>
+
+      <div class="qz">
+        <span class="ztype">Выбор одного варианта</span>
+        <p class="zq">Вопрос 5. С какого шага следует начинать системную диагностику неисправности?</p>
+        <button class="zopt" data-ok="false" onclick="qzSingle(this)"><span class="l">А.</span>Сразу заменить блок питания</button>
+        <button class="zopt" data-ok="true" onclick="qzSingle(this)"><span class="l">Б.</span>Со сбора информации и воспроизведения проблемы</button>
+        <button class="zopt" data-ok="false" onclick="qzSingle(this)"><span class="l">В.</span>С переустановки операционной системы</button>
+        <button class="zopt" data-ok="false" onclick="qzSingle(this)"><span class="l">Г.</span>С полной разборки компьютера</button>
+        <div class="zexpl"><p class="head">Пояснение</p><p>Системный подход начинается со сбора информации и воспроизведения неисправности, затем сужает область поиска.</p></div>
+      </div>
+
+      <div class="qz">
+        <span class="ztype">Верно или неверно</span>
+        <p class="zq">Вопрос 6. Резервное копирование данных рекомендуется выполнять регулярно, а не только после сбоя.</p>
+        <button class="zopt" data-ok="true" onclick="qzSingle(this)"><span class="l">А.</span>Верно</button>
+        <button class="zopt" data-ok="false" onclick="qzSingle(this)"><span class="l">Б.</span>Неверно</button>
+        <div class="zexpl"><p class="head">Пояснение</p><p>Регулярное резервное копирование защищает данные от потери при сбоях и ошибках.</p></div>
+      </div>
+
+      <p class="zscore" id="qzScore"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.deck .slide'));
+  var cur = 0;
+  var prevBtn = document.getElementById('prev');
+  var nextBtn = document.getElementById('next');
+  var counter = document.getElementById('counter');
+  var dotsBox = document.getElementById('dots');
+
+  function render(){
+    slides.forEach(function(s, i){ s.classList.toggle('active', i === cur); });
+    prevBtn.disabled = (cur === 0);
+    nextBtn.disabled = (cur === slides.length - 1);
+    counter.textContent = (cur + 1) + ' / ' + slides.length;
+    document.getElementById('pfill').style.width = ((cur + 1) / slides.length * 100) + '%';
+    buildDots();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  function buildDots(){
+    dotsBox.innerHTML = '';
+    for (var i = 0; i < slides.length; i++){
+      var d = document.createElement('button');
+      d.className = 'dot' + (i === cur ? ' active' : '');
+      d.title = 'Слайд ' + (i+1);
+      (function(idx){ d.addEventListener('click', function(){ go(idx); }); })(i);
+      dotsBox.appendChild(d);
+    }
+  }
+  function go(idx){
+    if (idx < 0 || idx >= slides.length) return;
+    cur = idx; render();
+  }
+  prevBtn.addEventListener('click', function(){ go(cur - 1); });
+  nextBtn.addEventListener('click', function(){ go(cur + 1); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') go(cur + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') go(cur - 1);
+  });
+
+  var overlay = document.getElementById('modalOverlay');
+  document.getElementById('openModal').addEventListener('click', function(){ overlay.classList.add('show'); });
+  document.getElementById('modalClose').addEventListener('click', function(){ overlay.classList.remove('show'); });
+  overlay.addEventListener('click', function(e){ if (e.target === overlay) overlay.classList.remove('show'); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') overlay.classList.remove('show'); });
+
+  var qzTotal = 6, qzDone = 0, qzScore = 0;
+  function qzSingle(btn){
+    var qz = btn.closest('.qz');
+    if (qz.classList.contains('done')) return;
+    qz.classList.add('done');
+    var ok = btn.getAttribute('data-ok') === 'true';
+    var opts = qz.querySelectorAll('.zopt');
+    opts.forEach(function(o){ o.disabled = true; });
+    var expl = qz.querySelector('.zexpl');
+    if (ok){ qzScore++; expl.classList.add('ok'); expl.querySelector('.head').textContent = 'Верно. Ответ выбран правильно.'; }
+    else { expl.classList.add('bad'); expl.querySelector('.head').textContent = 'Неверно. Правильный ответ подсвечен.'; opts.forEach(function(o){ if(o.getAttribute('data-ok')==='true') o.classList.add('right'); }); }
+    expl.classList.add('show'); qzDone++; updateQzScore();
+  }
+  function qzMulti(btn){
+    var qz = btn.closest('.qz');
+    if (qz.classList.contains('done')) return;
+    var ok = btn.getAttribute('data-ok') === 'true';
+    btn.disabled = true; btn.classList.add(ok ? 'right' : 'wrong');
+    var expl = qz.querySelector('.zexpl');
+    if (!ok){ qz.classList.add('done'); expl.classList.add('bad'); expl.querySelector('.head').textContent = 'Ошибка. Выбранный вариант неверен.'; expl.classList.add('show'); qzDone++; updateQzScore(); return; }
+    var allOk = true;
+    qz.querySelectorAll('.zopt[data-ok="true"]').forEach(function(o){ if(!o.classList.contains('right')) allOk=false; });
+    if (allOk){ qz.classList.add('done'); expl.classList.add('ok'); expl.querySelector('.head').textContent = 'Верно. Все правильные варианты выбраны.'; expl.classList.add('show'); qzScore++; qzDone++; updateQzScore(); }
+  }
+  function updateQzScore(){
+    var el = document.getElementById('qzScore');
+    if (el) el.textContent = 'Результат самопроверки: ' + qzScore + ' из ' + qzTotal + '.';
+  }
+
+  /* ---------- Interactive 1: sort ---------- */
+  var selectedCard = null;
+  var sortEl = document.getElementById('sortPool');
+  var hint = document.getElementById('sortHint');
+  var softCount = 0, hardCount = 0, totalSort = sortEl.querySelectorAll('.card').length;
+
+  sortEl.addEventListener('click', function(e){
+    var c = e.target.closest('.card');
+    if (!c || c.parentElement !== sortEl) return;
+    sortEl.querySelectorAll('.card.sel').forEach(function(x){ x.classList.remove('sel'); });
+    c.classList.add('sel');
+  });
+  function placeInto(drop, card){
+    if (!card) return;
+    var cardEl = card.cloneNode(true);
+    cardEl.classList.remove('sel');
+    cardEl.style.cursor = 'pointer';
+    cardEl.addEventListener('click', function(){ cardEl.remove(); sortEl.appendChild(card); });
+    drop.appendChild(cardEl);
+    card.remove();
+    var ok = drop.getAttribute('data-drop') === card.getAttribute('data-sort');
+    if (ok){ drop.classList.remove('error'); }
+    else { drop.classList.add('error'); }
+    var done = document.querySelectorAll('#sortPool .card').length === 0;
+    if (done){ hint.textContent = 'Распределение завершено. Сверьте результаты с группой и преподавателем.'; }
+    else { hint.textContent = ''; }
+  }
+  document.querySelectorAll('.dropzone').forEach(function(dz){
+    dz.addEventListener('click', function(e){
+      var c = sortEl.querySelector('.card.sel');
+      if (c) placeInto(this, c);
+    });
+  });
+
+  /* ---------- Interactive 2: sequence pool -> board ---------- */
+  var seqOrder = ['Сбор информации', 'Воспроизведение неисправности', 'Определение области', 'Проверка вероятных причин', 'Локализация и устранение', 'Проверка результата', 'Документирование'];
+  var seqPool = document.getElementById('seqPool');
+  var seqBuilt = document.getElementById('seqBuilt');
+  var seqMsg = document.getElementById('seqMsg');
+
+  function mkChip(text, intoBuilt){
+    var chip = document.createElement('button');
+    chip.className = 'card seq-chip';
+    chip.textContent = text;
+    chip.addEventListener('click', function(){
+      // перемещение между пулом и полем сборки
+      var parent = chip.parentElement;
+      if (parent === seqPool){ seqBuilt.appendChild(chip); }
+      else { seqPool.appendChild(chip); }
+    });
+    (intoBuilt ? seqBuilt : seqPool).appendChild(chip);
+  }
+  function renderSeq2(){
+    seqPool.innerHTML = ''; seqBuilt.innerHTML = ''; seqMsg.textContent = '';
+    // перемешиваем правильный порядок
+    var shuffled = seqOrder.slice().sort(function(){ return Math.random() - 0.5; });
+    shuffled.forEach(function(s){ mkChip(s, false); });
+  }
+  document.getElementById('seqCheck').addEventListener('click', function(){
+    var built = Array.prototype.slice.call(seqBuilt.children).map(function(c){ return c.textContent; });
+    if (built.length === 0){ seqMsg.textContent = 'Сначала перенесите шаги в поле для сборки.'; return; }
+    var ok = built.length === seqOrder.length && built.every(function(v, i){ return v === seqOrder[i]; });
+    if (ok){ seqMsg.textContent = 'Верно! Последовательность собрана правильно: ' + built.join(' → '); }
+    else { seqMsg.textContent = 'Пока неверно. Порядок следует строить «от простого к сложному»: сбор информации, воспроизведение, определение области, проверка причин, локализация, проверка результата, документирование.'; }
+  });
+  document.getElementById('seqReset').addEventListener('click', renderSeq2);
+  renderSeq2();
+
+  /* ---------- Interactive 3: mismatch ---------- */
+  var matchMsg = document.getElementById('matchMsg');
+  document.querySelectorAll('.match-wrap .card').forEach(function(c){
+    c.addEventListener('click', function(){
+      if (c.getAttribute('data-wrong') === 'true'){
+        c.classList.add('right'); matchMsg.textContent = 'Верно! Это несоответствие: отвёртка не удаляет пыль.';
+      } else {
+        c.classList.add('error'); matchMsg.textContent = 'Нет, эта пара верна. Подумайте ещё.';
+      }
+    });
+  });
+
+  render();
+</script>
+</body>
+</html>
